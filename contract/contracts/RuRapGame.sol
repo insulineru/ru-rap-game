@@ -26,8 +26,20 @@ contract RuRapGame is ERC721 {
 
   CharacterAttributes[] defaultCharacters;
 
-  mapping(uint256 => CharacterAttributes) public nftHolderAttributes;
+  event CharacterNFTMinted(address sender, uint256 tokenId, uint256 characterIndex);
+  event AttackComplete(uint newBossHp, uint newPlayerHp);
 
+  struct RaidBoss {
+    string name;
+    string imageURI;
+    uint hp;
+    uint maxHp;
+    uint attackDamage;
+  }
+
+  RaidBoss public raidBoss;
+
+  mapping(uint256 => CharacterAttributes) public nftHolderAttributes;
   mapping(address => uint256) public nftHolders;
 
 
@@ -36,8 +48,23 @@ contract RuRapGame is ERC721 {
     string[] memory characterNames,
     string[] memory characterImageURIs,
     uint[] memory characterHp,
-    uint[] memory characterAttackDmg
+    uint[] memory characterAttackDmg,
+    string memory bossName,
+    string memory bossImageURI,
+    uint bossHp,
+    uint bossAttackDamage
   ) ERC721("Rappers", "RAPPER") {
+
+    raidBoss = RaidBoss({
+      name: bossName,
+      imageURI: bossImageURI,
+      hp: bossHp,
+      maxHp: bossHp,
+      attackDamage: bossAttackDamage
+    });
+
+    console.log("Done initializing boss %s w/ HP %s, img %s", raidBoss.name, raidBoss.hp, raidBoss.imageURI);
+
     for(uint i = 0; i < characterNames.length; i += 1) {
       defaultCharacters.push(CharacterAttributes({
         characterIndex: i,
@@ -53,6 +80,9 @@ contract RuRapGame is ERC721 {
     }
 
     _tokenIds.increment();
+
+    emit CharacterNFTMinted(msg.sender, newItemId, _characterIndex);
+
   }
 
   function mintCharacterNFT(uint _characterIndex) external {
@@ -106,4 +136,60 @@ contract RuRapGame is ERC721 {
 
     return output;
   }
+
+  function attackBoss() public {
+    uint256 nftTokenIdOfPlayer = nftHolders[msg.sender];
+    CharacterAttributes storage player = nftHolderAttributes[nftTokenIdOfPlayer];
+
+    console.log("\nPlayer w/ character %s about to attack. Has %s HP and %s AD", player.name, player.hp, player.attackDamage);
+    console.log("Boss %s has %s HP and %s AD", raidBoss.name, raidBoss.hp, raidBoss.attackDamage);
+
+    require (
+      player.hp > 0,
+      "Error: character must have HP to attack boss."
+    );
+
+    require (
+      raidBoss.hp > 0,
+      "Error: boss must have HP to attack boss."
+    );
+
+    if (raidBoss.hp < player.attackDamage) {
+      raidBoss.hp = 0;
+    } else {
+      raidBoss.hp = raidBoss.hp - player.attackDamage;
+    }
+
+    if (player.hp < raidBoss.attackDamage) {
+      player.hp = 0;
+    } else {
+      player.hp = player.hp - raidBoss.attackDamage;
+    }
+
+    console.log("Player attacked boss. New boss hp: %s", raidBoss.hp);
+    console.log("Boss attacked player. New player hp: %s\n", player.hp);
+    emit AttackComplete(raidBoss.hp, player.hp);
+
+  }
+
+  function checkIfUserHasNFT() public view returns (CharacterAttributes memory) {
+    uint256 userNftTokenId = nftHolders[msg.sender];
+
+    if (userNftTokenId > 0) {
+      return nftHolderAttributes[userNftTokenId];
+    } else {
+      CharacterAttributes memory emptyStruct;
+      return emptyStruct;
+    }
+  }
+
+  function getAllDefaultCharacters() public view returns (CharacterAttributes[] memory) {
+    return defaultCharacters;
+  }
+
+  function getRaidBoss() public view returns (RaidBoss memory) {
+    return raidBoss;
+  }
+
+
 }
