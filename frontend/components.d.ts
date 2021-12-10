@@ -5,6 +5,9 @@
 declare module 'vue' {
   export interface GlobalComponents {
     Footer: typeof import('./src/components/Footer.vue')['default']
+    Login: typeof import('./src/components/Login.vue')['default']
+    LoginForm: typeof import('./src/components/LoginForm.vue')['default']
+    SelectCharacter: typeof import('./src/components/SelectCharacter.vue')['default']
   }
 }
 
