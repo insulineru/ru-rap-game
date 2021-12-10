@@ -80,9 +80,6 @@ contract RuRapGame is ERC721 {
     }
 
     _tokenIds.increment();
-
-    emit CharacterNFTMinted(msg.sender, newItemId, _characterIndex);
-
   }
 
   function mintCharacterNFT(uint _characterIndex) external {
@@ -104,6 +101,7 @@ contract RuRapGame is ERC721 {
     nftHolders[msg.sender] = newItemId;
 
     _tokenIds.increment();
+    emit CharacterNFTMinted(msg.sender, newItemId, _characterIndex);
   }
 
   function tokenURI(uint256 _tokenId) public view override returns (string memory) {
