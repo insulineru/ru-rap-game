@@ -9,8 +9,14 @@
 </template>
 
 <script setup lang="ts">
+import { checkIfUserHasNFT } from '~/core/contract'
+import { transformCharacterData } from '~/utils/transformCharacterData'
+import { ICharacter } from '~/types/character'
+import { contract } from '~/core/contract'
+import { BigNumber } from 'ethers'
 const currentAccount = ref('')
-const userNft = ref(null)
+
+const userNft = ref<ICharacter | null>(null)
 
 const checkIfWalletIsConnected = async () => {
   try {
@@ -25,7 +31,7 @@ const checkIfWalletIsConnected = async () => {
     if (accounts.length !== 0) {
       const account = accounts[0]
       console.log("Found an authorized account:", account)
-      currentAccount.value = account
+      setAccount(account)
     } else {
       console.log("No authorized account found")
     }
@@ -34,11 +40,38 @@ const checkIfWalletIsConnected = async () => {
   }
 }
 
-const setAccount = (value: string) => {
-  currentAccount.value = value;
+const setAccount = async (value: string) => {
+  currentAccount.value = value
+
+  if (value) {
+    console.log('Checking for Character NFT on address:', value)
+
+    const txn = await checkIfUserHasNFT()
+    if (txn.name) {
+      console.log('User has character NFT')
+      userNft.value = transformCharacterData(txn)
+    } else {
+      console.log('No character NFT found')
+    }
+  }
+}
+
+const onCharacterMint = async (sender: string, tokenId: BigNumber, characterIndex: BigNumber) => {
+  console.log(
+    `CharacterNFTMinted - sender: ${sender} tokenId: ${tokenId.toNumber()} characterIndex: ${characterIndex.toNumber()}`
+  )
+
+  const characterNFT = await checkIfUserHasNFT()
+  console.log('CharacterNFT: ', characterNFT)
+  userNft.value = transformCharacterData(characterNFT)
 }
 
 onMounted(async () => {
   await checkIfWalletIsConnected()
+  contract.on('CharacterNFTMinted', onCharacterMint)
+})
+
+onBeforeUnmount(() => {
+  contract.off('CharacterNFTMinted', onCharacterMint)
 })
 </script>
