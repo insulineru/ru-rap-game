@@ -8,7 +8,7 @@ let signer = provider.getSigner()
 export const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer)
 
 export const checkIfUserHasNFT = async () => {
-  const nft = await readOnlyContract.checkIfUserHasNFT()
+  const nft = await contract.checkIfUserHasNFT()
   return nft
 }
 
