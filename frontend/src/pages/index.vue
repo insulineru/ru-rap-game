@@ -5,6 +5,11 @@
     <p>Legendary!</p>
     <login-form v-if="!currentAccount" @set-account="setAccount" />
     <select-character v-else-if="!userNft && !isLoading" />
+    <arena
+      :character="userNft"
+      v-else-if="userNft && !isLoading"
+      @update-character-hp="updateUserNftHp"
+    />
   </div>
 </template>
 
@@ -60,6 +65,12 @@ const setAccount = async (value: string) => {
   }
 
   isLoading.value = false
+}
+
+const updateUserNftHp = (hp: number) => {
+  if (userNft.value) {
+    userNft.value = { ...userNft.value, hp }
+  }
 }
 
 const onCharacterMint = async (sender: string, tokenId: BigNumber, characterIndex: BigNumber) => {
