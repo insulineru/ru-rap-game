@@ -4,3 +4,10 @@
     <Footer />
   </main>
 </template>
+
+<script setup lang="ts">
+import { toggleDark } from '~/composables'
+onMounted(() => {
+  toggleDark(true)
+})
+</script>
