@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 import { CONTRACT_ADDRESS } from '~/constants'
-import { abi } from '../../../contract/artifacts/contracts/RuRapGame.sol/RuRapGame.json'
+import { abi } from '~/utils/abi.json'
 
 let provider = new ethers.providers.Web3Provider(window.ethereum)
 export const readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, abi, provider)
