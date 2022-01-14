@@ -18,7 +18,7 @@ export const getAllDefaultCharacters = async () => {
 }
 
 export const mintCharacterNFT = async (id: number) => {
-  const mintTxn = await readOnlyContract.mintCharacterNFT(id)
+  const mintTxn = await contract.mintCharacterNFT(id)
   await mintTxn.wait()
   return mintTxn
 }
